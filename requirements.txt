@@ -1,0 +1,5 @@
+# requirements.txt for keyboardindicator project pip install -r requirements.txt
+Pillow
+pystray
+pywin32
+keyboard

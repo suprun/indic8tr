@@ -1,0 +1,50 @@
+# Nuitka build output
+build/
+dist/
+__nuitka_build__/
+nuitka-cache/
+# Python standard ignores
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.pyo
+*.pyd
+*.pdb
+*.sqlite3
+*.log
+*.pot
+*.mo
+*.db
+*.DS_Store
+*.swp
+*.bak
+*.tmp
+*.old
+*.orig
+*.pyc
+*.env
+.env/
+.venv/
+venv/
+ENV/
+env.bak/
+.idea/
+.vscode/
+# Installer files
+installer/*
+!installer/Output/
+!installer/*.iss
+!installer/*.bat
+!installer/*.exe
+# 
+in/
+*.bat
+# Specific files
+build_version.txt
+bump_version.py
+# End of .gitignore
