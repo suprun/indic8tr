@@ -1,11 +1,11 @@
 import sys
 import os
 import tkinter as tk
-from threading import Thread
+from threading import Thread, Timer
 
-from utils.SingleInstance import SingleInstance
+from utils import single_instance, resources
 from utils.SettingsManager import settings
-from utils.ResourceManager import ResourceManager as resources
+
 
 from core.LayoutMonitor import LayoutMonitor
 from core.TrayIcon import TrayIcon
@@ -15,8 +15,7 @@ from core.KeyboardManager import keyboard
 # ===== Main =====
 def main():
     # Перевірка на єдиний екземпляр   
-    instance = SingleInstance("Global\\KeyboardIndicatorSingletonMutex")
-    if instance.already_running:
+    if single_instance("Global\\KeyboardIndicatorSingletonMutex").already_running:
         # другий екземпляр закривається одразу
         print("Програма вже запущена!")
         sys.exit(0)
@@ -40,12 +39,32 @@ def main():
     # Початкове оновлення іконки
     current_layout = keyboard.get_current_layout_key()
     tray.update_icon(current_layout)
-
+    
     # Запуск моніторингу в окремому потоці
     monitor = LayoutMonitor(overlay, tray)
     tray.monitor = monitor  # Зберегти посилання для cleanup
-    
-    # Використовуємо надійний GetAsyncKeyState метод
+
+    if settings.firstrun:
+        # 1. Формуємо абсолютний шлях до зображення
+        image_path = resources().IMAGES['about_header'] 
+       
+        
+        # 2. Визначаємо функцію для відправки сповіщення та збереження налаштувань
+        def send_first_run_toast():
+            """Викликається після невеликої затримки."""
+            tray.show_notification_with_image_and_buttons(
+                image_path=image_path,
+                title="Ласкаво просимо!",
+                message="Я працюю! Натисніть кнопку або клацніть ПКМ для меню."
+            )
+            #settings.firstrun = False
+            settings.save()
+            
+        # 3. Плануємо виклик функції через 1000 мс (1 секунду)
+        # Це дає час pystray та Tkinter повністю ініціалізуватися.
+        root.after(1000, send_first_run_toast)
+        
+        # Використовуємо надійний GetAsyncKeyState метод
     if keyboard.HOOK_AVAILABLE:
         monitor_thread = Thread(target=monitor.monitor_with_async_key_state, daemon=True)
         print("Використовується GetAsyncKeyState для детекції клавіш")
@@ -61,7 +80,7 @@ def main():
         root.mainloop()
     except KeyboardInterrupt:
         tray.quit_app(None, None)
-
+    
 """import atexit
 def on_exit():
     settings.save()

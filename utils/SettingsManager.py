@@ -2,7 +2,7 @@ import os
 import json
 from utils.ResourceManager import ResourceManager as resources
 from core.Errors import Errors as errors
-from utils.StartupManager import startup 
+from utils.StartupManager import startup
 
 class SettingsManager:
     def __init__(self, settings_file, error_messages):
@@ -16,6 +16,7 @@ class SettingsManager:
         self.offset = 50
         self.wh = 96
         self.version = "1.0.4"  # Поточна версія програми
+        self.firstrun = True
 
     def load(self):
         """Завантажити налаштування з файлу та перевірити автостарт"""
@@ -44,6 +45,7 @@ class SettingsManager:
                     self.offset = data.get("offset", 50)
                     self.wh = data.get("wh", 96)
                     self.version = data.get("version", "1.0.4")  # Додати версію, якщо потрібно
+                    self.firstrun = data.get("firstrun", True)
             except Exception as e:
                 print(self.error_messages.settings_read.format(e=e))
 
@@ -57,8 +59,9 @@ class SettingsManager:
             "follow_cursor_mode": self.follow_cursor_mode,
             "default_offset": self.default_offset,
             "offset": self.offset,
-            "wh": self.wh
+            "wh": self.wh,
             # "version": "1.0.4"  # Додати версію, якщо потрібно
+            "firstrun": self.firstrun
         }
         try:
             with open(self.settings_file, "w", encoding="utf-8") as f:

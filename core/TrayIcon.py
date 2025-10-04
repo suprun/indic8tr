@@ -14,8 +14,11 @@ from core.lcid import LCID
 from core.LayoutMonitor import LayoutMonitor
 from core.AboutWindow import AboutWindow
 
-import win32gui
-import win32con
+from threading import Timer
+
+from windows_toasts import Toast, WindowsToaster, ToastImage, ToastButton
+# Примітка: TOASTER має бути ініціалізований поза класом або як атрибут класу
+TOASTER = WindowsToaster("KeyboardLayoutIndicator")
 class TrayIcon:  
     def __init__(self, overlay):
         self.icon = None
@@ -27,9 +30,7 @@ class TrayIcon:
         self.monitor = None  # type: LayoutMonitor | None
 
     def load_icon(self, icon_path, default_size=(16, 16)):
-        """Завантажити іконку з файлу або створити пусту, якщо файл відсутній"""
-
-        
+        """Завантажити іконку з файлу або створити пусту, якщо файл відсутній"""  
         try:
             icon = Image.open(icon_path).resize(default_size, Image.Resampling.LANCZOS)
             return icon
@@ -38,25 +39,70 @@ class TrayIcon:
             # Створюємо пусту іконку, якщо не вдалося завантажити
             empty_icon = Image.new('RGBA', default_size, (0, 0, 0, 0))
             return empty_icon
+               
+    def show_notification(self, icon, title="Сповіщення", message="Це сповіщення з вашого застосунку!"):
+        """Відправляє системне сповіщення (Toast Notification) з заданими заголовком та текстом."""
+        # Fix: Забезпечуємо, що метод приймає аргументи title та message
+        icon.notify(message, title)
+        print(f"Сповіщення '{title}' надіслано.")
+
+    
+    def handle_toast_action_with_image(self, action_id):
+        """Обробник, який викликається при натисканні кнопки у сповіщенні."""
+        print(f"Дія виконана зі сповіщення з зображенням: {action_id}")
         
-    def show_balloon(self, title, msg, timeout=10):
-        """Показати balloon-tip для tray іконки"""
-        hwnd = win32gui.GetForegroundWindow()
-        hicon = win32gui.LoadIcon(0, win32con.IDI_APPLICATION)
+        if action_id == "show_current_layout":
+            # Приклад: показати оверлей
+            self.overlay.show() 
+            print("Оверлей показано.")
+        elif action_id == "settings_from_toast":
+            # Приклад: функція, яка відкриває налаштування
+            # Замініть на ваш реальний метод відкриття налаштувань
+            print("Відкриття налаштувань...") 
+    
+    # --- Метод надсилання сповіщення з зображенням та кнопками ---
+    def show_notification_with_image_and_buttons(self, image_path, title, message):
+        """Надсилає сповіщення Windows Toast Notification з довільним зображенням та кнопками."""
+        
+        # 1. Створення об'єкта сповіщення (Toast)
+        new_toast = Toast()
+        new_toast.text_fields = [title, message]
+        
+        # 2. Додавання зображення (App Logo Override - маленький логотип)
+        try:
+            # Зображення буде відображатися як маленький круглий значок
+            new_toast.app_logo_override = ToastImage(src=image_path, alt="Layout Flag")
+            
+            # Якщо вам потрібне велике "героїчне" зображення, використовуйте:
+            # new_toast.hero_image = ToastImage(src=image_path, alt="Layout Hero")
+            
+        except Exception as e:
+            # Це може статися, якщо шлях до файлу неправильний
+            print(f"Помилка при додаванні зображення до сповіщення: {e}")
+            
+        # 3. Додавання кнопок
+        new_toast.buttons = [
+            ToastButton(
+                text="Показати розкладку", 
+                arguments="show_current_layout", 
+                on_activated=self.handle_toast_action_with_image
+            ),
+            ToastButton(
+                text="Налаштування", 
+                arguments="settings_from_toast", 
+                on_activated=self.handle_toast_action_with_image
+            )
+        ]
+        
+        # 4. Надсилання сповіщення у фоновому потоці
+        # Це запобігає блокуванню головного циклу Tkinter
+        def send_toast():
+            try:
+                TOASTER.show_toast(new_toast)
+            except Exception as e:
+                print(f"Помилка при відправці тосту через WindowsToaster: {e}")
 
-        flags = win32gui.NIF_MESSAGE | win32gui.NIF_ICON | win32gui.NIF_TIP | win32gui.NIF_INFO
-        nid = (hwnd, 0,
-               flags,
-               win32con.WM_USER + 20,
-               hicon,
-               self.name,
-               msg,
-               timeout * 1000,
-               title,
-               win32gui.NIIF_INFO)
-
-        win32gui.Shell_NotifyIcon(win32gui.NIM_MODIFY, nid)
-
+        threading.Thread(target=send_toast, daemon=True).start()
     
     def update_icon(self, layout_key):
         if layout_key not in LCID:
@@ -76,6 +122,65 @@ class TrayIcon:
                 self.icon.icon = image
         except Exception as e:
             print(errors().tray_icon.format(e=e))
+
+    def handle_toast_action_with_image(self, args):
+        """
+        Обробник, який викликається при натисканні кнопки або тіла сповіщення.
+        Args - це словник {'arguments': '...', 'user_input': {...}}
+        """
+        action_id = args.get('arguments', '')
+        print(f"Дія виконана зі сповіщення з зображенням: {action_id}")
+        
+        # Обробка дій
+        if action_id == "show_current_layout":
+            print(f"Поточна розкладка: {self.current_layout}")
+            self.overlay.show()
+        elif action_id == "open_settings":
+            self.open_about(None, None)
+            print("Відкриття налаштувань з тосту...")
+            
+    def show_notification_with_image_and_buttons(self, image_path, title, message):
+        """
+        Надсилає сповіщення Windows Toast Notification з довільним зображенням та кнопками.
+        """
+        
+        # 1. Визначення зображення (як App Logo Override)
+        # Використовуємо словник для визначення розміщення
+        icon_config = {
+            'src': image_path, 
+            'placement': 'appLogoOverride'
+        }
+        
+        # 2. Визначення кнопок
+        buttons_config = [
+            # Кнопка 1: Викликає вашу функцію
+            {
+                'activationType': 'protocol', 
+                'arguments': 'show_current_layout', # Ідентифікатор дії
+                'content': 'Показати розкладку'
+            },
+            # Кнопка 2: Викликає вашу функцію
+            {
+                'activationType': 'protocol', 
+                'arguments': 'open_settings', # Ідентифікатор дії
+                'content': 'Налаштування'
+            }
+        ]
+        
+        try:
+            # 3. Надсилання сповіщення
+            # Використовуємо 'on_click' для обробки натискань кнопок
+            toast(
+                title=title,
+                body=message,
+                icon=icon_config, # Передаємо іконку
+                buttons=buttons_config, # Передаємо кнопки
+                on_click=self.handle_toast_action_with_image # Обробник
+            )
+            
+        except Exception as e:
+            print(f"Помилка при відправці тосту через win11toast: {e}")
+
 
     def toggle_autostart(self, icon, item):
         """Перемикання автостарту"""
@@ -223,6 +328,7 @@ class TrayIcon:
             item(lang.get("options", "Options"), options_menu),
             item(lang.get("position", "Position"), position_menu),
             item(lang.get("about", "About"), self.open_about),
+            
             Menu.SEPARATOR,
             item(lang.get("exit", "Exit"), self.quit_app)
         )
