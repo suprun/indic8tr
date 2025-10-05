@@ -15,8 +15,9 @@ from utils.WinShutdownExit import WinShutdownExit
 
 # ===== Main =====
 def main():
-    # Перевірка на єдиний екземпляр   
-    if single_instance("Global\\KeyboardIndicatorSingletonMutex").already_running:
+    # Перевірка на єдиний екземпляр  
+    instance = single_instance("Global\\KeyboardIndicatorSingletonMutex")
+    if instance.already_running:
         # другий екземпляр закривається одразу
         print("Програма вже запущена!")
         sys.exit(0)

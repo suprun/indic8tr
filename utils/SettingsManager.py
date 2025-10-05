@@ -15,7 +15,7 @@ class SettingsManager:
         self.default_offset = 50
         self.offset = 50
         self.wh = 96
-        self.version = "1.0.4"  # Поточна версія програми
+        self.version = "0.9.3.11"  # Поточна версія програми
         self.firstrun = True
 
     def load(self):
@@ -60,7 +60,7 @@ class SettingsManager:
             "default_offset": self.default_offset,
             "offset": self.offset,
             "wh": self.wh,
-            # "version": "1.0.4"  # Додати версію, якщо потрібно
+            # "version": "0.9.3.11"  # Додати версію, якщо потрібно
             "firstrun": self.firstrun
         }
         try:
