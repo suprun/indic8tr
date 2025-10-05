@@ -2,11 +2,23 @@ import win32con
 import win32gui
 import sys
 import os
-import threading
 import traceback
 from datetime import datetime
 
+# === Глобальна функція для виходу з програми ===
+_global_shutdown_handler = None
+def set_global_shutdown_handler(handler):
+    global _global_shutdown_handler
+    _global_shutdown_handler = handler
 
+def app_exit():
+    """Універсальний вихід з програми з логуванням (можна викликати з будь-якого місця)."""
+    if _global_shutdown_handler is not None:
+        _global_shutdown_handler._safe_exit()
+    else:
+        # Fallback: аварійний вихід
+        print("[app_exit] No shutdown handler set, exiting immediately.")
+        sys.exit(0)
 class WinShutdownExit:
     """
     Відслідковує завершення роботи Windows, вихід користувача або перезапуск.
@@ -24,11 +36,46 @@ class WinShutdownExit:
         self.on_exit_callback = on_exit_callback
         self.tray = tray
         self.root = root
-        self.log_path = log_path or os.path.join(os.path.dirname(sys.argv[0]), "shutdown.log")
+        if log_path:
+            self.log_path = log_path
+        else:
+            appdata_dir = os.environ.get('APPDATA') or os.path.expanduser('~')
+            app_settings_dir = os.path.join(appdata_dir, 'Indic8tr')
+            os.makedirs(app_settings_dir, exist_ok=True)
+            self.log_path = os.path.join(app_settings_dir, "shutdown.log")
 
         self._log(f"WinShutdownExit ініціалізовано. Лог: {self.log_path}")
-        self.thread = threading.Thread(target=self._message_loop, daemon=True)
-        self.thread.start()
+
+        # --- Tkinter protocol handlers for shutdown/logoff ---
+        if self.root is not None:
+            try:
+                # Handle window close (Alt+F4, X button)
+                self.root.protocol("WM_DELETE_WINDOW", self._safe_exit)
+                # Handle Windows shutdown/logoff (WM_QUERYENDSESSION)
+                import ctypes
+                import ctypes.wintypes
+                user32 = ctypes.windll.user32
+                GWL_WNDPROC = -4
+                WM_QUERYENDSESSION = 0x0011
+                WM_ENDSESSION = 0x0016
+                original_wndproc = None
+
+                def py_wndproc(hwnd, msg, wparam, lparam):
+                    if msg == WM_QUERYENDSESSION or msg == WM_ENDSESSION:
+                        self._log("Tkinter: Отримано WM_QUERYENDSESSION/WM_ENDSESSION")
+                        self._safe_exit()
+                        return 0
+                    return user32.CallWindowProcW(original_wndproc, hwnd, msg, wparam, lparam)
+
+                # Get the HWND for the Tkinter root window
+                hwnd = self.root.winfo_id()
+                WNDPROCTYPE = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_int, ctypes.c_uint, ctypes.c_int, ctypes.c_int)
+                py_wndproc_c = WNDPROCTYPE(py_wndproc)
+                original_wndproc = user32.GetWindowLongW(hwnd, GWL_WNDPROC)
+                user32.SetWindowLongW(hwnd, GWL_WNDPROC, py_wndproc_c)
+                self._log("Tkinter: WNDPROC перехоплено для WM_QUERYENDSESSION")
+            except Exception as e:
+                self._log(f"[WinShutdownExit] Не вдалося встановити WNDPROC: {e}")
 
     # ========== Основна логіка ==========
     def _message_loop(self):

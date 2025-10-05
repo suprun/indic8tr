@@ -1,6 +1,6 @@
 [Setup]
 AppName=!ndic8r Keyboard language indicator
-AppVersion=0.9.03.014
+AppVersion=0.9.03.017
 AppPublisher=Serhiy Suprun
 AppPublisherURL=https://github.com/suprun/indic8tr
 AppSupportURL=https://github.com/suprun/indic8tr/wiki
@@ -37,6 +37,7 @@ Source: "..\build\main.dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesu
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
 ; Додаємо іконку для деінсталяції
 Source: "..\images\icons\favicon-uninstall.ico"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "{src}\{#SetupSetting("OutputBaseFilename")}.exe"; DestDir: "{app}"; Flags: external; DestName: "InstallerBackup.exe"
 
 [Dirs]
 ; Видалити папку {app} повністю, навіть якщо вона порожня
@@ -51,6 +52,8 @@ Name: "{group}\Keyboard Indicator"; Filename: "{app}\KeyboardIndicator.exe"
 Name: "{group}\Uninstall !ndic8r Keyboard Layout Indicator"; Filename: "{uninstallexe}"; IconFilename: "{app}\images\icons\favicon-uninstall.ico"
 ; Ярлик у автозавантаження (Startup у %APPDATA%)
 Name: "{userstartup}\KeyboardIndicator"; Filename: "{app}\KeyboardIndicator.exe"
+;Name: "{group}\Reinstall"; Filename: "{app}\InstallerBackup.exe"; IconFilename: "{app}\images\icons\favicon-reinstall.ico"; Comment: "Запустити для перевстановлення або відновлення програми"
+
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
@@ -81,3 +84,7 @@ jp.licenseview=ライセンスファイルを開く
 Filename: "{app}\KeyboardIndicator.exe"; Flags: nowait postinstall skipifsilent; Description: "{cm:LaunchProgram,Keyboard Indicator}"
 ; Відкрити у Блокноті саме LICENSE.txt
 Filename: "notepad.exe"; Parameters: """{app}\LICENSE.txt"""; Description: "{cm:licenseview}"; Flags: postinstall skipifsilent unchecked
+
+[UninstallDelete]
+Type: files; Name: "{userappdata}\Indic8tr\*"
+;Type: dirifempty; Name: "{userappdata}\Indic8tr"

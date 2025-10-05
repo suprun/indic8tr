@@ -7,6 +7,7 @@ from PIL import Image
 from utils.ResourceManager import ResourceManager as resources
 from utils.SettingsManager import settings
 from utils.StartupManager import startup
+from utils.WinShutdownExit import app_exit
 
 from core.KeyboardManager import keyboard
 from core.Errors import Errors as errors
@@ -28,7 +29,7 @@ class TrayIcon:
         print(f"Default layout: {self.default_layout}")
         self._icon_thread_started = False
         self.monitor = None  # type: LayoutMonitor | None
-
+        
     def load_icon(self, icon_path, default_size=(16, 16)):
         """Завантажити іконку з файлу або створити пусту, якщо файл відсутній"""  
         try:
@@ -225,7 +226,7 @@ class TrayIcon:
         about_window.show()
 
     def quit_app(self, icon, item):
-        # Очистити ресурси монітора
+                # Fallback: старий спосіб
         if self.monitor is not None:
             self.monitor.cleanup()
         if self.icon:
@@ -235,7 +236,7 @@ class TrayIcon:
             self.overlay.root.destroy()
         except Exception:
             pass
-        sys.exit(0)
+        app_exit()
 
     def create_menu(self):
         lang = LCID.get(self.default_layout, LCID["0x0409"])

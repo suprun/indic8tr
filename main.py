@@ -11,8 +11,11 @@ from core.LayoutMonitor import LayoutMonitor
 from core.TrayIcon import TrayIcon
 from core.FlagOverlay import FlagOverlay
 from core.KeyboardManager import keyboard
-from utils.WinShutdownExit import WinShutdownExit
+from utils.WinShutdownExit import WinShutdownExit, set_global_shutdown_handler
 
+def run_shutdown_listener(handler):
+    """Функція для запуску слухача системних повідомлень Windows."""
+    handler._message_loop()
 # ===== Main =====
 def main():
     # Перевірка на єдиний екземпляр  
@@ -46,6 +49,21 @@ def main():
     monitor = LayoutMonitor(overlay, tray)
     tray.monitor = monitor  # Зберегти посилання для cleanup
 
+    # Налаштування обробника завершення програми
+    shutdown_handler = WinShutdownExit(
+        on_exit_callback=settings.save,
+        tray=tray,
+        root=root
+    )
+    set_global_shutdown_handler(shutdown_handler)
+
+    listener_thread = Thread(
+        target=run_shutdown_listener, 
+        args=(shutdown_handler,),
+        daemon=True # Важливо, щоб потік не блокував sys.exit
+    )
+    listener_thread.start()
+
     if settings.firstrun:
         # 1. Формуємо абсолютний шлях до зображення
         image_path = resources().IMAGES['about_header'] 
@@ -76,11 +94,6 @@ def main():
         print("Fallback: простий polling без детекції клавіш")
     
     monitor_thread.start()
-    shutdown_handler = WinShutdownExit(
-        on_exit_callback=settings.save,
-        tray=tray,
-        root=root
-    )
     # Головний цикл
     try:
         root.mainloop()
