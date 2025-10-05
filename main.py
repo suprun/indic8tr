@@ -11,6 +11,7 @@ from core.LayoutMonitor import LayoutMonitor
 from core.TrayIcon import TrayIcon
 from core.FlagOverlay import FlagOverlay
 from core.KeyboardManager import keyboard
+from utils.WinShutdownExit import WinShutdownExit
 
 # ===== Main =====
 def main():
@@ -74,7 +75,11 @@ def main():
         print("Fallback: простий polling без детекції клавіш")
     
     monitor_thread.start()
-
+    shutdown_handler = WinShutdownExit(
+        on_exit_callback=settings.save,
+        tray=tray,
+        root=root
+    )
     # Головний цикл
     try:
         root.mainloop()

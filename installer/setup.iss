@@ -1,6 +1,6 @@
 [Setup]
 AppName=!ndic8r Keyboard language indicator
-AppVersion=0.9.3
+AppVersion=0.9.3.2
 AppPublisher=Serhiy Suprun
 AppPublisherURL=https://github.com/suprun/indic8tr
 AppSupportURL=https://github.com/suprun/indic8tr/wiki
@@ -24,9 +24,9 @@ LicenseFile=..\LICENSE
 ; Відображення діалогу вибору мови
 ShowLanguageDialog=true
 ; Файли банерів для майстра встановлення
-WizardImageFile="images\banner.bmp"       
+WizardImageFile="images\banner.png"       
 ; великий банер у майстрі 164 × 314 px
-WizardSmallImageFile=images\small.bmp  
+WizardSmallImageFile=images\small.png  
 ; маленький банер у майстрі 256 × 256 px
 SetupIconFile=..\images\icons\favicon.ico
 
