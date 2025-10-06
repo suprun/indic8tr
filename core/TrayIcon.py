@@ -2,7 +2,6 @@ from threading import Thread
 import pystray
 from pystray import MenuItem as item, Menu
 from PIL import Image
-from plyer import notification
 
 from utils.ResourceManager import ResourceManager as resources
 from utils.SettingsManager import settings
@@ -34,31 +33,7 @@ class TrayIcon:
             print(f"Failed to load icon {icon_path}: {e}")
             # Створюємо пусту іконку, якщо не вдалося завантажити
             empty_icon = Image.new('RGBA', default_size, (0, 0, 0, 0))
-            return empty_icon
-               
-    def show_notification(self, title="Сповіщення", message="Це сповіщення з вашого застосунку!",   type_="info"):
-        """
-        Відправляє toast-повідомлення Windows без створення іконки в треї.
-        type_ : str — 'info', 'warning', 'error', 'success'
-        """
-        # Налаштування типів сповіщень (таймаути у секундах)
-        config = {
-            "info": 5,
-            "warning": 6,
-            "error": 8,
-            "success": 4
-        }
-        timeout = config.get(type_, 5)
-        try:
-            notification.notify(
-                title=title,
-                message=message,
-                timeout=timeout
-                # app_icon не вказуємо → трей не створюється
-            )
-        except Exception as e:
-            print(f"[TrayIcon Notification Error] {e}")   
-       
+            return empty_icon      
  
     def update_icon(self, layout_key):
         if layout_key not in LCID:

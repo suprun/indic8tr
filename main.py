@@ -70,14 +70,7 @@ def main():
         # Fallback якщо ctypes недоступний
         monitor_thread = Thread(target=monitor.monitor_with_polling_only, daemon=True)
         print("Fallback: простий polling без детекції клавіш")
-    
-    '''if settings.firstrun:
-        #def firstrun_notification ():   
-        tray.show_notification("NDIC8TR", "Програма запущена успішно!", "info")
-        settings.firstrun = False
-        settings.save()
-        #root.after(1000, firstrun_notification)'''  
-    
+ 
     monitor_thread.start()
     # Головний цикл
     try:
