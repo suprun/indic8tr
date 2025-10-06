@@ -30,7 +30,7 @@ class SettingsManager:
         self.default_offset = default_data.get("default_offset", 50)
         self.offset = default_data.get("offset", 50)
         self.wh = default_data.get("wh", 96)
-        self.version="0.9.03.018"
+        self.version="0.9.03.019"
         self.firstrun = default_data.get("firstrun", True)
         self.autostart = False  # Чи є ярлик в автозавантаженні
 

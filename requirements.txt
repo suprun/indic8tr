@@ -2,4 +2,7 @@
 Pillow
 pystray
 pywin32
+winotify
+windows-toasts
+win11toast
 keyboard
