@@ -1,6 +1,6 @@
 [Setup]
 AppName=!ndic8r Keyboard language indicator
-AppVersion=0.9.03.019
+AppVersion=0.9.04.001
 AppPublisher=Serhiy Suprun
 AppPublisherURL=https://github.com/suprun/indic8tr
 AppSupportURL=https://github.com/suprun/indic8tr/wiki

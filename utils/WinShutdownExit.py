@@ -144,6 +144,7 @@ class WinShutdownExit:
                 self._log("→ Закриття Tkinter")
                 self.root.quit()
                 self.root.destroy()
+                self.root = None
         except Exception:
             self._log("ПОМИЛКА у root.destroy():\n" + traceback.format_exc())
 

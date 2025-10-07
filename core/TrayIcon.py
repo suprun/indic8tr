@@ -106,6 +106,7 @@ class TrayIcon:
         try:
             self.overlay.root.quit()
             self.overlay.root.destroy()
+            self.overlay.root = None
         except Exception:
             pass
         app_exit()

@@ -6,6 +6,7 @@ from threading import Thread
 from utils import single_instance, resources
 from utils.SettingsManager import settings
 from utils.WinShutdownExit import WinShutdownExit, set_global_shutdown_handler
+from utils.TkNotification import CustomNotification
 
 from core.LayoutMonitor import LayoutMonitor
 from core.TrayIcon import TrayIcon
@@ -71,18 +72,19 @@ def main():
         monitor_thread = Thread(target=monitor.monitor_with_polling_only, daemon=True)
         print("Fallback: простий polling без детекції клавіш")
  
+    if settings.firstrun:
+        notification = CustomNotification(root)
+        root.notification = notification 
+        settings.firstrun = False
+        settings.save()
+        # Показати нотифікацію про перший запуск
+        
     monitor_thread.start()
     # Головний цикл
     try:
         root.mainloop()
     except KeyboardInterrupt:
         tray.quit_app(None, None)
-    
-"""import atexit
-def on_exit():
-    settings.save()
-
-atexit.register(on_exit)"""
 
 if __name__ == "__main__":
     main()

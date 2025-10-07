@@ -25,6 +25,7 @@ class ResourceManager:
         }
         self.IMAGES = {
             'about_header': self.get_resource_path("../images/img/about_header.png"),
+            'firstrun_header': self.get_resource_path("../images/img/firstrun_header.png")
         }
 
     def get_resource_path(self, relative_path):

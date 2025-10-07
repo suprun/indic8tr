@@ -37,7 +37,6 @@ env.bak/
 .vscode/
 # Installer files
 installer/*
-!installer/Output/
 !installer/*.iss
 !installer/*.bat
 !installer/*.exe
@@ -47,4 +46,5 @@ in/
 # Specific files
 build_version.txt
 bump_version.py
+appid.py
 # End of .gitignore
