@@ -164,7 +164,8 @@ class CustomNotification(tk.Toplevel):
                 
         close_img = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
         draw = ImageDraw.Draw(close_img)
-        line_color = "white" if self.system_theme == "dark" else "black"
+        line_color = "black"
+        #line_color = "white" if self.system_theme == "dark" else "black"
         draw.line((3, 3, 13, 13), fill=line_color, width=2)
         draw.line((3, 13, 13, 3), fill=line_color, width=2)
         self.close_icon = ImageTk.PhotoImage(close_img)

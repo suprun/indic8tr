@@ -17,7 +17,9 @@ RestartIfNeededByRun=yes
 ; Заборонити встановлення, якщо програма вже встановлена
 Uninstallable=yes
 AllowCancelDuringInstall=yes
-
+; Windows 7
+MinVersion=6.1
+; Визначення мови інсталятора за мовою системи
 LanguageDetectionMethod=locale
 ; Файл ліцензії
 LicenseFile=..\LICENSE

@@ -14,6 +14,7 @@ class KeyboardLayoutManager:
             self.HOOK_AVAILABLE = True
         except ImportError:
             self.HOOK_AVAILABLE = False
+        self.layout_by_default = self.get_default_keyboard_layout() if self.HOOK_AVAILABLE else "0x0409"
 
     def get_key_state(self, vk_code: int) -> bool:
         """Перевірити стан клавіші через GetAsyncKeyState"""
@@ -52,9 +53,9 @@ class KeyboardLayoutManager:
             tid = win32process.GetWindowThreadProcessId(hwnd)[0]
             layout_id = win32api.GetKeyboardLayout(tid) & 0xffff
             hex_id = f"0x{layout_id:04x}"
-            return hex_id if hex_id in LCID else "0x0409"
+            return hex_id if hex_id in LCID else self.layout_by_default
         except:
-            return "0x0409"
+            return self.layout_by_default
 
     def get_default_keyboard_layout(self) -> str:
         """Отримати розкладку клавіатури за замовчуванням з реєстру"""
